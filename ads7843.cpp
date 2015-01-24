@@ -4,7 +4,7 @@ Point::Point(void) {
   x = y = 0;
 }
 
-Point::Point(int16_t x0, int16_t y0, int16_t z0) {
+Point::Point(uint32_t x0, uint32_t y0, uint32_t z0) {
   x = x0;
   y = y0;
   z = z0;
@@ -26,7 +26,7 @@ ADS7843 :: ADS7843(uint32_t cs, uint32_t dclk, uint32_t din, uint32_t dout, uint
 	_din = din;
 	_dout = dout;
 	_irq = irq;
-
+#if 0
 	_cs_port = digitalPinToPort(_cs);
 	_dclk_port = digitalPinToPort(_dclk);
 	_din_port = digitalPinToPort(_din);
@@ -38,7 +38,7 @@ ADS7843 :: ADS7843(uint32_t cs, uint32_t dclk, uint32_t din, uint32_t dout, uint
 	_din_pin = digitalPinToBitMask(_din);
 	_dout_pin = digitalPinToBitMask(_dout);
 	_irq_pin = digitalPinToBitMask(_irq);
-
+#endif
 }
 
 void ADS7843 :: begin()
@@ -54,9 +54,9 @@ void ADS7843 :: begin()
 	digitalWrite(_din, HIGH);
 }
 
-void ADS7843 :: write(uint8_t dat)
+void ADS7843 :: write(uint32_t dat)
 {
-	uint8_t nop;
+	uint32_t nop;
 	digitalWrite(_dclk,LOW);
 	for(int i=0; i<8; i++) {
 		if(dat&0x80)
@@ -75,10 +75,10 @@ void ADS7843 :: write(uint8_t dat)
 	}
 }
 
-uint16_t ADS7843 :: read()
+uint32_t ADS7843 :: read()
 {
-	uint8_t nop;
-	uint16_t Num=0;
+	uint32_t nop;
+	uint32_t Num=0;
 	for(int i=0; i<12; i++) {
 		Num<<=1;
 		digitalWrite(_dclk,HIGH);//DCLK=1; _nop_();_nop_();_nop_();
@@ -92,20 +92,20 @@ uint16_t ADS7843 :: read()
 }
 #define ADS7843_READ_TIMES		10
 #define ADS7843_LOST_VAL		3
-Point ADS7843 :: getpos(uint8_t *flag)
+Point ADS7843 :: getpos(uint32_t *flag)
 {
 	Point p[ADS7843_READ_TIMES];
 	Point P;
 	int i;
 	int k,j,x_tmp, y_tmp;
 	uint32_t sum_x, sum_y;
-	uint16_t tmp;
+	uint32_t tmp;
 	
 	i=0; sum_x = 0; sum_y = 0;
 	
 	while(check_irq()){
 		
-		getPosOnce( (uint16_t *)(&(p[i].x)), (uint16_t *)(&(p[i].y)) );
+		getPosOnce( (uint32_t *)(&(p[i].x)), (uint32_t *)(&(p[i].y)) );
 		
 		i++;
 		if(i==ADS7843_READ_TIMES){
@@ -151,8 +151,8 @@ Point ADS7843 :: getpos(uint8_t *flag)
 			Serial.print(sum_y, DEC);
 			Serial.println();
 #endif
-			P.x = (uint16_t)sum_x;
-			P.y = (uint16_t)sum_y;;
+			P.x = (uint32_t)sum_x;
+			P.y = (uint32_t)sum_y;;
 
 #if ADS7843_DEBUG
 			Serial.print("I:");
@@ -170,7 +170,7 @@ Point ADS7843 :: getpos(uint8_t *flag)
 	return P;
 }
 
-void ADS7843 :: getPosOnce(uint16_t *x, uint16_t *y)
+void ADS7843 :: getPosOnce(uint32_t *x, uint32_t *y)
 {
 	digitalWrite(_cs,LOW);                    
 	write(0x90); 
@@ -184,12 +184,12 @@ void ADS7843 :: getPosOnce(uint16_t *x, uint16_t *y)
 	digitalWrite(_cs,HIGH);
 }
 
-uint8_t ADS7843 :: check_irq(void)
+uint32_t ADS7843 :: check_irq(void)
 {
 	return ( (digitalRead(_irq)==HIGH) ? 0 : 1 );
 }
 
-uint8_t ADS7843 :: wr(uint8_t dat)
+uint32_t ADS7843 :: wr(uint32_t dat)
 {
 	
 
